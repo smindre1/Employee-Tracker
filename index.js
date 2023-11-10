@@ -5,7 +5,7 @@ const connection = require("./config/connection");
 
 connection.connect((error) => {
   if(error) {
-    console.dir("error");
+    console.dir("Databse connection error");
   };
   userQuestions();
 }
@@ -53,33 +53,30 @@ inquirer
     }
     if (answer == "Update an employee role.") {
       updateEmployeeRole();
-    } else {
-      console.dir("Code Error");
     }
+    //  else {
+    //   console.dir("Code Error");
+    // }
   });
 }
 
 const viewDepartments = () => {
   connection.query("SELECT * FROM `department`", function (err, results, fields) {
     console.dir(results); // results contains rows returned by server
-    console.dir("----");
-    console.dir(fields); // fields contains extra meta data about results, if available
+    console.dir("------------");
+    console.table(results);
   });
 };
 
 const viewRoles = () => {
   connection.query("SELECT * FROM `role`", function (err, results, fields) {
     console.dir(results); // results contains rows returned by server
-    console.dir("----");
-    console.dir(fields); // fields contains extra meta data about results, if available
   });
 };
 
 const viewEmployees = () => {
   connection.query("SELECT * FROM `employee`", function (err, results, fields) {
     console.dir(results); // results contains rows returned by server
-    console.dir("----");
-    console.dir(fields); // fields contains extra meta data about results, if available
   });
 };
 
@@ -94,19 +91,16 @@ const addDepartment = () => {
     ])
     .then((obj) => {
       const { name } = obj;
-      ///
-      connection.query(`INSERT INTO 'department' (name) VALUES (${name})`, function (err, results, fields) {
-        // console.dir(results); // results contains rows returned by server
-        // console.dir("----");
-        // console.dir(fields); // fields contains extra meta data about results, if available
+      connection.query('INSERT INTO department (name) VALUES (?)', [name], function (err, results, fields) {
+        console.dir(results); // results contains rows returned by server
       });
     });
   // viewDepartments();
 };
 
 const addRole = () => {
-  let roleTitle = "";
-  let salary = "";
+  let roleTitle;
+  let salary;
   inquirer
     .prompt([
       {
@@ -121,8 +115,8 @@ const addRole = () => {
       },
     ])
     .then((obj) => {
-      const { name, money } = obj;
-      roleTitle = name;
+      const { title, money } = obj;
+      roleTitle = title;
       salary = money;
     });
   viewDepartments();
@@ -136,10 +130,10 @@ const addRole = () => {
     ])
     .then((obj) => {
       const { id } = obj;
-      connection.query(`INSERT INTO 'role' (title, salary, department_id) VALUES (${roleTitle}, ${salary}, ${id})`, function (err, results, fields) {
+      connection.query('INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)', [roleTitle, salary, id], function (err, results, fields) {
         console.dir(results); // results contains rows returned by server
-        console.dir("----");
-        console.dir(fields); // fields contains extra meta data about results, if available
+        console.dir("------------");
+        console.table(results);
         viewRoles();
       });
     });
@@ -194,11 +188,9 @@ const addEmployee = () => {
       const { id } = obj;
       managerId = id;
       connection.query(
-        `INSERT INTO 'employee' (first_name, last_name, role_id, manager_id) VALUES (${firstName}, ${lastName}, ${roleId}, ${managerId})`,
+        'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [firstName, lastName, roleId, managerId],
         function (err, results, fields) {
           console.dir(results); // results contains rows returned by server
-          console.dir("----");
-          console.dir(fields); // fields contains extra meta data about results, if available
           viewRoles();
         }
       );
@@ -233,10 +225,8 @@ const updateEmployeeRole = () => {
     .then((obj) => {
       const { role } = obj;
       const roleId = role;
-      connection.query(`UPDATE 'employee' SET role_id = ${roleId} WHERE id = ${employeeId}`, function (err, results, fields) {
+      connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [roleId, employeeId], function (err, results, fields) {
         console.dir(results); // results contains rows returned by server
-        console.dir("----");
-        console.dir(fields); // fields contains extra meta data about results, if available
         viewEmployees();
       });
     });
