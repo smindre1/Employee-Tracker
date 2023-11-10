@@ -1,33 +1,25 @@
 const inquirer = require("inquirer");
 // const department = require()
-const mysql = require("mysql2");
+const connection = require("./config/connection");
 
-const connection = mysql.createConnection(
-  {
-    host: "localhost",
-    //MySQL Username
-    user: "root",
-    database: "employee_db",
-  },
-  console.log("Connected to the employee_db database")
+
+connection.connect((error) => {
+  if(error) {
+    console.dir("error");
+  };
+  userQuestions();
+}
 );
 
-// simple query
-// connection.query(
-//   'SELECT * FROM `table` WHERE `name` = "Page" AND `age` > 45',
-//   function(err, results, fields) {
-//     console.log(results); // results contains rows returned by server
-//     console.log(fields); // fields contains extra meta data about results, if available
-//   }
-// );
 
 //Inquirer Prompts
+const userQuestions = () => {
 inquirer
   .prompt([
     {
-      type: "rawlist",
-      message: "What would you like to do?",
       name: "answer",
+      message: "What would you like to do?",
+      type: "rawlist",
       choices: [
         "View all departments.",
         "View all roles.",
@@ -36,35 +28,36 @@ inquirer
         "Add a role.",
         "Add an employee.",
         "Update an employee role.",
-      ],
+      ]
     },
   ])
   .then((obj) => {
     const { answer } = obj;
-    if ((answer = "View all departments.")) {
+    if (answer == "View all departments.") {
       viewDepartments();
     }
-    if ((answer = "View all roles.")) {
+    if (answer == "View all roles.") {
       viewRoles();
     }
-    if ((answer = "View all employees.")) {
+    if (answer == "View all employees.") {
       viewEmployees();
     }
-    if ((answer = "Add a department.")) {
+    if (answer == "Add a department.") {
       addDepartment();
     }
-    if ((answer = "Add a role.")) {
+    if (answer == "Add a role.") {
       addRole();
     }
-    if ((answer = "Add an employee.")) {
+    if (answer == "Add an employee.") {
       addEmployee();
     }
-    if ((answer = "Update an employee role.")) {
+    if (answer == "Update an employee role.") {
       updateEmployeeRole();
     } else {
       console.dir("Code Error");
     }
   });
+}
 
 const viewDepartments = () => {
   connection.query("SELECT * FROM `department`", function (err, results, fields) {
@@ -103,9 +96,9 @@ const addDepartment = () => {
       const { name } = obj;
       ///
       connection.query(`INSERT INTO 'department' (name) VALUES (${name})`, function (err, results, fields) {
-        console.dir(results); // results contains rows returned by server
-        console.dir("----");
-        console.dir(fields); // fields contains extra meta data about results, if available
+        // console.dir(results); // results contains rows returned by server
+        // console.dir("----");
+        // console.dir(fields); // fields contains extra meta data about results, if available
       });
     });
   // viewDepartments();
