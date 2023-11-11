@@ -94,9 +94,9 @@ const addDepartment = () => {
         console.dir("=====================");
         console.dir("New department added.");
         console.dir("=====================");
+        userQuestions();
       });
     });
-  userQuestions();
 };
 
 const addRole = async () => {
@@ -122,33 +122,36 @@ const addRole = async () => {
       salary = money;
     });
   //
-  connection.query("SELECT * FROM `department`", await function (err, results, fields) {
-    results.forEach((element) => {
-      array.push(element.name);
-    });
-    inquirer
-    .prompt([
-      {
-        type: "list",
-        message: "Please select the department this role belongs to: ",
-        choices: array,
-        name: "department",
-      },
-    ])
-    .then((obj) => {
-      const { department } = obj;
-      let id;
-      connection.query("SELECT id FROM `department` WHERE name = ?", [department], function (err, results, fields) {
-        id = results[0].id;
-        connection.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [roleTitle, salary, id], function (err, results, fields) {
-            console.dir("=====================");
-            console.dir(`Added ${roleTitle} to the database.`);
-            console.dir("=====================");
-            userQuestions();
-          });
+  connection.query(
+    "SELECT * FROM `department`",
+    await function (err, results, fields) {
+      results.forEach((element) => {
+        array.push(element.name);
       });
-    });
-  });
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            message: "Please select the department this role belongs to: ",
+            choices: array,
+            name: "department",
+          },
+        ])
+        .then((obj) => {
+          const { department } = obj;
+          let id;
+          connection.query("SELECT id FROM `department` WHERE name = ?", [department], function (err, results, fields) {
+            id = results[0].id;
+            connection.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [roleTitle, salary, id], function (err, results, fields) {
+              console.dir("=====================");
+              console.dir(`Added ${roleTitle} to the database.`);
+              console.dir("=====================");
+              userQuestions();
+            });
+          });
+        });
+    }
+  );
 };
 
 ///
@@ -158,6 +161,8 @@ const addEmployee = () => {
   let lastName;
   let roleId;
   let managerId;
+  let array = [];
+
   inquirer
     .prompt([
       {
@@ -175,44 +180,68 @@ const addEmployee = () => {
       const { fName, lName } = obj;
       firstName = fName;
       lastName = lName;
-    });
-  viewRoles();
-  inquirer
-    .prompt([
-      {
-        type: "number",
-        message: "Please input the id associated with the role this employee belongs to: ",
-        name: "id",
-      },
-    ])
-    .then((obj) => {
-      const { id } = obj;
-      roleId = id;
-    });
-  viewEmployees();
-  inquirer
-    .prompt([
-      {
-        type: "number",
-        message: "Please input the id associated with the manager that this employee belongs to: ",
-        name: "id",
-      },
-    ])
-    .then((obj) => {
-      const { id } = obj;
-      managerId = id;
-      connection.query(
-        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
-        [firstName, lastName, roleId, managerId],
-        function (err, results, fields) {
-          console.dir(results); // results contains rows returned by server
-          viewRoles();
-        }
-      );
+      connection.query("SELECT title FROM `role`", function (err, results, fields) {
+        results.forEach((element) => {
+          array.push(element.title);
+        });
+        inquirer
+          .prompt([
+            {
+              type: "list",
+              message: "Please select the role this employee belongs to: ",
+              choices: array,
+              name: "role",
+            },
+          ])
+          .then((obj) => {
+            const { role } = obj;
+            connection.query("SELECT id FROM `role` WHERE title = ?", [role], function (err, results, fields) {
+              roleId = results[0].id;
+              connection.query("SELECT first_name, last_name FROM `employee`", function (err, results, fields) {
+                array = ["None"];
+                results.forEach((element) => {
+                  array.push(`${element.first_name} ${element.last_name}`);
+                });
+                inquirer
+                  .prompt([
+                    {
+                      type: "list",
+                      message: "Please which manager this employee belongs to: ",
+                      choices: array,
+                      name: "manager",
+                    },
+                  ])
+                  .then((obj) => {
+                    const { manager } = obj;
+                    let managerId;
+                    if (manager === "None") {
+                      managerId = null;
+                    } else {
+                      const fullName = manager.split(" ");
+                      connection.query(
+                        "SELECT id FROM `employee` WHERE first_name = ? AND last_name = ?",
+                        [fullName[0], fullName[1]],
+                        function (err, results, fields) {
+                          managerId = results[0].id;
+                          connection.query(
+                            "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+                            [firstName, lastName, roleId, managerId],
+                            function (err, results, fields) {
+                              userQuestions();
+                            }
+                          );
+                        }
+                      );
+                    }
+                  });
+              });
+            });
+          });
+      });
     });
 };
 
-//
+////
 const updateEmployeeRole = () => {
   let employeeId;
   viewEmployees();

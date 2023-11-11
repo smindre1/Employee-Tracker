@@ -35,8 +35,9 @@ CREATE TABLE employee (
 -- SELECT * FROM department;
 
 
--- INSERT INTO users (username, email, password)
--- VALUES ("user", "user@gmail.com", "password");
+-- INSERT INTO employee (first_name, last_name, role_id, manager_id)
+-- VALUES ("Bob", "Douglas", 1, null), ("Jamey", "Oak", 1, null),
+-- ("Chuck", "Ronald", 1, null);
 
 -- INSERT INTO lists (title, theme, user_id)
 -- VALUES ("List Title", Null, 1), ("Empty", Null, 1);
