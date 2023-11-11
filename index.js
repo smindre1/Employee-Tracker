@@ -2,81 +2,80 @@ const inquirer = require("inquirer");
 // const department = require()
 const connection = require("./config/connection");
 
-
 connection.connect((error) => {
-  if(error) {
+  if (error) {
     console.dir("Databse connection error");
-  };
+  }
   userQuestions();
-}
-);
-
+});
 
 //Inquirer Prompts
 const userQuestions = () => {
-inquirer
-  .prompt([
-    {
-      name: "answer",
-      message: "What would you like to do?",
-      type: "rawlist",
-      choices: [
-        "View all departments.",
-        "View all roles.",
-        "View all employees.",
-        "Add a department.",
-        "Add a role.",
-        "Add an employee.",
-        "Update an employee role.",
-      ]
-    },
-  ])
-  .then((obj) => {
-    const { answer } = obj;
-    if (answer == "View all departments.") {
-      viewDepartments();
-    }
-    if (answer == "View all roles.") {
-      viewRoles();
-    }
-    if (answer == "View all employees.") {
-      viewEmployees();
-    }
-    if (answer == "Add a department.") {
-      addDepartment();
-    }
-    if (answer == "Add a role.") {
-      addRole();
-    }
-    if (answer == "Add an employee.") {
-      addEmployee();
-    }
-    if (answer == "Update an employee role.") {
-      updateEmployeeRole();
-    }
-    //  else {
-    //   console.dir("Code Error");
-    // }
-  });
-}
-
+  inquirer
+    .prompt([
+      {
+        name: "answer",
+        message: "What would you like to do?",
+        type: "rawlist",
+        choices: [
+          "View all departments.",
+          "View all roles.",
+          "View all employees.",
+          "Add a department.",
+          "Add a role.",
+          "Add an employee.",
+          "Update an employee role.",
+          "Exit.",
+        ],
+      },
+    ])
+    .then((obj) => {
+      const { answer } = obj;
+      if (answer == "View all departments.") {
+        viewDepartments();
+      }
+      if (answer == "View all roles.") {
+        viewRoles();
+      }
+      if (answer == "View all employees.") {
+        viewEmployees();
+      }
+      if (answer == "Add a department.") {
+        addDepartment();
+      }
+      if (answer == "Add a role.") {
+        addRole();
+      }
+      if (answer == "Add an employee.") {
+        addEmployee();
+      }
+      if (answer == "Update an employee role.") {
+        updateEmployeeRole();
+      }
+      if (answer === "Exit.") {
+        process.exit();
+      }
+    });
+};
+//Grabs the data from the department table in the database and returns a table
 const viewDepartments = () => {
   connection.query("SELECT * FROM `department`", function (err, results, fields) {
-    console.dir(results); // results contains rows returned by server
-    console.dir("------------");
-    console.table(results);
+    console.table(results); // Returns results as a table in terminal
+    userQuestions();
   });
 };
-
+//Grabs the data from the role table in the database and returns a table
 const viewRoles = () => {
   connection.query("SELECT * FROM `role`", function (err, results, fields) {
-    console.dir(results); // results contains rows returned by server
+    console.table(results); // Returns results as a table in terminal
+    userQuestions();
   });
 };
-
+//Grabs the data from the employee table in the database and returns a table
 const viewEmployees = () => {
   connection.query("SELECT * FROM `employee`", function (err, results, fields) {
-    console.dir(results); // results contains rows returned by server
+    console.table(results); // Returns results as a table in terminal
+    userQuestions();
   });
 };
 
@@ -91,17 +90,20 @@ const addDepartment = () => {
     ])
     .then((obj) => {
       const { name } = obj;
-      connection.query('INSERT INTO department (name) VALUES (?)', [name], function (err, results, fields) {
-        console.dir(results); // results contains rows returned by server
+      connection.query("INSERT INTO department (name) VALUES (?)", [name], function (err, results, fields) {
+        console.dir("=====================");
+        console.dir("New department added.");
+        console.dir("=====================");
       });
     });
-  // viewDepartments();
+  userQuestions();
 };
 
-const addRole = () => {
+const addRole = async () => {
   let roleTitle;
   let salary;
-  inquirer
+  let array = [];
+  await inquirer
     .prompt([
       {
         type: "input",
@@ -119,25 +121,37 @@ const addRole = () => {
       roleTitle = title;
       salary = money;
     });
-  viewDepartments();
-  inquirer
+  //
+  connection.query("SELECT * FROM `department`", await function (err, results, fields) {
+    results.forEach((element) => {
+      array.push(element.name);
+    });
+    inquirer
     .prompt([
       {
-        type: "number",
-        message: "Please input the id associated with the department this role belongs to: ",
-        name: "id",
+        type: "list",
+        message: "Please select the department this role belongs to: ",
+        choices: array,
+        name: "department",
       },
     ])
     .then((obj) => {
-      const { id } = obj;
-      connection.query('INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)', [roleTitle, salary, id], function (err, results, fields) {
-        console.dir(results); // results contains rows returned by server
-        console.dir("------------");
-        console.table(results);
-        viewRoles();
+      const { department } = obj;
+      let id;
+      connection.query("SELECT id FROM `department` WHERE name = ?", [department], function (err, results, fields) {
+        id = results[0].id;
+        connection.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [roleTitle, salary, id], function (err, results, fields) {
+            console.dir("=====================");
+            console.dir(`Added ${roleTitle} to the database.`);
+            console.dir("=====================");
+            userQuestions();
+          });
       });
     });
+  });
 };
+
+///
 //enter the employee’s first name, last name, role, and manager
 const addEmployee = () => {
   let firstName;
@@ -188,7 +202,8 @@ const addEmployee = () => {
       const { id } = obj;
       managerId = id;
       connection.query(
-        'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [firstName, lastName, roleId, managerId],
+        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+        [firstName, lastName, roleId, managerId],
         function (err, results, fields) {
           console.dir(results); // results contains rows returned by server
           viewRoles();
@@ -225,7 +240,7 @@ const updateEmployeeRole = () => {
     .then((obj) => {
       const { role } = obj;
       const roleId = role;
-      connection.query('UPDATE employee SET role_id = ? WHERE id = ?', [roleId, employeeId], function (err, results, fields) {
+      connection.query("UPDATE employee SET role_id = ? WHERE id = ?", [roleId, employeeId], function (err, results, fields) {
         console.dir(results); // results contains rows returned by server
         viewEmployees();
       });
