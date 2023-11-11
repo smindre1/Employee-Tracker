@@ -206,7 +206,7 @@ const addEmployee = () => {
                   .prompt([
                     {
                       type: "list",
-                      message: "Please which manager this employee belongs to: ",
+                      message: "Please state which manager this employee belongs to: ",
                       choices: array,
                       name: "manager",
                     },
@@ -243,35 +243,51 @@ const addEmployee = () => {
 
 ////
 const updateEmployeeRole = () => {
-  let employeeId;
-  viewEmployees();
-  inquirer
-    .prompt([
-      {
-        type: "number",
-        message: "Please choose the id number of the employee you wish to update: ",
-        name: "id",
-      },
-    ])
-    .then((obj) => {
-      const { id } = obj;
-      employeeId = id;
+  let array = [];
+  connection.query("SELECT first_name, last_name FROM `employee`", function (err, results, fields) {
+    results.forEach((element) => {
+      array.push(`${element.first_name} ${element.last_name}`);
     });
-  viewRoles();
-  inquirer
-    .prompt([
-      {
-        type: "number",
-        message: "Please choose the id number of the role you wish to assign to this employee: ",
-        name: "role",
-      },
-    ])
-    .then((obj) => {
-      const { role } = obj;
-      const roleId = role;
-      connection.query("UPDATE employee SET role_id = ? WHERE id = ?", [roleId, employeeId], function (err, results, fields) {
-        console.dir(results); // results contains rows returned by server
-        viewEmployees();
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          message: "Please choose which employee to update: ",
+          choices: array,
+          name: "employee",
+        },
+      ])
+      .then((obj) => {
+        const { employee } = obj;
+        let employeeId;
+        const fullName = employee.split(" ");
+        connection.query("SELECT title FROM `role` ", function (err, results, fields) {
+          array = [];
+          results.forEach((element) => {
+            array.push(`${element.title}`);
+          });
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                message: "Please choose which role to assign to the employee: ",
+                choices: array,
+                name: "role",
+              },
+            ])
+            .then((obj) => {
+              const { role } = obj;
+              connection.query("SELECT id FROM `role` WHERE title = ? ", [role], function (err, results, fields) {
+                connection.query(
+                  "UPDATE `employee` SET role_id = ? WHERE first_name = ? AND last_name = ? ",
+                  [results[0].id, fullName[0], fullName[1]],
+                  function (err, results, fields) {
+                    userQuestions();
+                  }
+                );
+              });
+            });
+        });
       });
-    });
+  });
 };
