@@ -61,7 +61,9 @@ const userQuestions = () => {
 const viewDepartments = () => {
   connection.query("SELECT * FROM `department`", function (err, results, fields) {
     console.table(results); // Returns results as a table in terminal
-    userQuestions();
+    console.dir(results);
+    dataTable(results);
+    // userQuestions();
   });
 };
 //Grabs the data from the role table in the database and returns a table
@@ -154,7 +156,6 @@ const addRole = async () => {
   );
 };
 
-///
 //enter the employee’s first name, last name, role, and manager
 const addEmployee = () => {
   let firstName;
@@ -290,4 +291,99 @@ const updateEmployeeRole = () => {
         });
       });
   });
+};
+
+// const columnWidth = (key, nestedArray) => {
+//   let width = key.length;
+//   nestedArray.forEach((element) => {
+//     if (width < element[key].length) {
+//       width = element[key].length;
+//     }
+//   });
+//   return width;
+// };
+
+const dataTable = (data) => {
+  // Measures the length of the widest item for a specific object key
+  const columnWidth = (key, nestedArray) => {
+    let width = key.length;
+    nestedArray.forEach((element) => {
+      if (width < element[key].length) {
+        width = element[key].length;
+      }
+    });
+    return width;
+  };
+  if (data[0] != null && data[0] != undefined) {
+    const keys = Object.keys(data[0]);
+    const numOfKeys = keys.length;
+    const widthArray = [];
+    //width of each key column
+    keys.forEach((element) => {
+      widthArray.push(columnWidth(element, data));
+    });
+    //Create the top portion of titles of
+    for (i = 0; i < numOfKeys; i++) {
+      let borderWidth = 0;
+      borderWidth = borderWidth + columnWidth(keys[i], data) + 2;
+    }
+    let topBorderLine = "┌";
+    let sideLine = "─";
+    for (i=0; i < widthArray.length; i++) {
+      topBorderLine = topBorderLine + sideLine.repeat(widthArray[i] + 2);
+      topBorderLine = topBorderLine + "┬";
+    };
+    topBorderLine = topBorderLine.slice(0, -1) + "┐";
+    console.dir(topBorderLine);
+    //Column titles row
+    let row = "│";
+    let space = " ";
+    for (i=0; i< numOfKeys; i++) {
+      let padding = ((widthArray[i] + 2) - keys[i].length);
+      if (padding % 2 == 1) {
+        padding = (padding - 1) / 2;
+        row = row + space.repeat(padding) + keys[i] + space.repeat(padding + 1) + "│";
+      } else {
+        row = row + space.repeat(padding/2) + keys[i] + space.repeat(padding/2) + "│";
+      }
+    };
+    console.dir(row);
+    //Division line
+    let divider = "├";
+    for (i=0; i < widthArray.length; i++) {
+      divider = divider + sideLine.repeat(widthArray[i] + 2);
+      divider = divider + "┼";
+    };
+    divider = divider.slice(0, -1) + "┤";
+    console.dir(divider);
+    //Create the rows
+    row = "│";
+    data.forEach((element) => {
+      for(i=0; i < numOfKeys; i++) {
+        //Adds each key value with padding around it
+        let padding;
+        if(element[keys[i]] == null) {
+          padding = ((widthArray[i] + 2) - 4); //The 4 is in place of the character length for null
+        } else {
+          padding = ((widthArray[i] + 2) - element[keys[i]].toString().length);
+        };
+        if (padding % 2 == 1) {
+          padding = (padding - 1) / 2;
+          row = row + space.repeat(padding) + element[keys[i]] + space.repeat(padding + 1) + "│";
+        } else {
+          row = row + space.repeat(padding/2) + element[keys[i]] + space.repeat(padding/2) + "│";
+        }
+      }
+      console.dir(row);
+      row = "│";
+    });
+    //Create the end of table
+    divider = "└";
+    for (i=0; i < widthArray.length; i++) {
+      divider = divider + sideLine.repeat(widthArray[i] + 2);
+      divider = divider + "┴";
+    };
+    divider = divider.slice(0, -1) + "┘";
+    console.dir(divider);
+  }
 };
