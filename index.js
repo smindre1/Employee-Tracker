@@ -60,23 +60,21 @@ const userQuestions = () => {
 //Grabs the data from the department table in the database and returns a table
 const viewDepartments = () => {
   connection.query("SELECT * FROM `department`", function (err, results, fields) {
-    console.table(results); // Returns results as a table in terminal
-    console.dir(results);
-    dataTable(results);
-    // userQuestions();
+    dataTable(results); // Returns results as a table in terminal
+    userQuestions();
   });
 };
 //Grabs the data from the role table in the database and returns a table
 const viewRoles = () => {
   connection.query("SELECT * FROM `role`", function (err, results, fields) {
-    console.table(results); // Returns results as a table in terminal
+    dataTable(results); // Returns results as a table in terminal
     userQuestions();
   });
 };
 //Grabs the data from the employee table in the database and returns a table
 const viewEmployees = () => {
   connection.query("SELECT * FROM `employee`", function (err, results, fields) {
-    console.table(results); // Returns results as a table in terminal
+    dataTable(results); // Returns results as a table in terminal
     userQuestions();
   });
 };
@@ -293,21 +291,14 @@ const updateEmployeeRole = () => {
   });
 };
 
-// const columnWidth = (key, nestedArray) => {
-//   let width = key.length;
-//   nestedArray.forEach((element) => {
-//     if (width < element[key].length) {
-//       width = element[key].length;
-//     }
-//   });
-//   return width;
-// };
-
 const dataTable = (data) => {
   // Measures the length of the widest item for a specific object key
   const columnWidth = (key, nestedArray) => {
     let width = key.length;
     nestedArray.forEach((element) => {
+      if (element[key] == null) {
+        element[key] = "null";
+      };
       if (width < element[key].length) {
         width = element[key].length;
       }
@@ -364,6 +355,7 @@ const dataTable = (data) => {
         let padding;
         if(element[keys[i]] == null) {
           padding = ((widthArray[i] + 2) - 4); //The 4 is in place of the character length for null
+          element[keys[i]] = "null";
         } else {
           padding = ((widthArray[i] + 2) - element[keys[i]].toString().length);
         };
