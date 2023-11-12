@@ -29,21 +29,12 @@ CREATE TABLE employee (
     REFERENCES employee(id)
 );
 
+INSERT INTO department (name)
+VALUES ('Advertisement'), ('Computer Repair');
 
+INSERT INTO roles (title, salary, department_id)
+VALUES ('Computer Repair', 80000, 2), ('Advertisement', 70000, 1);
 
--- /////////////////
--- SELECT * FROM department;
-
-
--- INSERT INTO employee (first_name, last_name, role_id, manager_id)
--- VALUES ("Bob", "Douglas", 1, null), ("Jamey", "Oak", 1, null),
--- ("Chuck", "Ronald", 1, null);
-
--- INSERT INTO lists (title, theme, user_id)
--- VALUES ("List Title", Null, 1), ("Empty", Null, 1);
-
--- INSERT INTO list_items (recipient, price, present, date, list_id)
--- VALUES ("Bob", "3:00$", "Present 1", Null, 1 ),
--- ("Jerry", "6:00$", "Present 2", Null, 1 ),
--- ("Tom", "9:00$", "Present 3", Null, 1 ),
--- ("Chuck", "12:00$", "Present 4", Null, 1 );
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ("Bob", "Douglas", 1, null), ("Jamey", "Oak", 1, null),
+("Chuck", "Ronald", 1, null), ("Ash", "Ketchum", 2, 2);

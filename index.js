@@ -298,7 +298,7 @@ const dataTable = (data) => {
     nestedArray.forEach((element) => {
       if (element[key] == null) {
         element[key] = "null";
-      };
+      }
       if (width < element[key].length) {
         width = element[key].length;
       }
@@ -320,50 +320,50 @@ const dataTable = (data) => {
     }
     let topBorderLine = "┌";
     let sideLine = "─";
-    for (i=0; i < widthArray.length; i++) {
+    for (i = 0; i < widthArray.length; i++) {
       topBorderLine = topBorderLine + sideLine.repeat(widthArray[i] + 2);
       topBorderLine = topBorderLine + "┬";
-    };
+    }
     topBorderLine = topBorderLine.slice(0, -1) + "┐";
     console.dir(topBorderLine);
     //Column titles row
     let row = "│";
     let space = " ";
-    for (i=0; i< numOfKeys; i++) {
-      let padding = ((widthArray[i] + 2) - keys[i].length);
+    for (i = 0; i < numOfKeys; i++) {
+      let padding = widthArray[i] + 2 - keys[i].length;
       if (padding % 2 == 1) {
         padding = (padding - 1) / 2;
         row = row + space.repeat(padding) + keys[i] + space.repeat(padding + 1) + "│";
       } else {
-        row = row + space.repeat(padding/2) + keys[i] + space.repeat(padding/2) + "│";
+        row = row + space.repeat(padding / 2) + keys[i] + space.repeat(padding / 2) + "│";
       }
-    };
+    }
     console.dir(row);
     //Division line
     let divider = "├";
-    for (i=0; i < widthArray.length; i++) {
+    for (i = 0; i < widthArray.length; i++) {
       divider = divider + sideLine.repeat(widthArray[i] + 2);
       divider = divider + "┼";
-    };
+    }
     divider = divider.slice(0, -1) + "┤";
     console.dir(divider);
     //Create the rows
     row = "│";
     data.forEach((element) => {
-      for(i=0; i < numOfKeys; i++) {
+      for (i = 0; i < numOfKeys; i++) {
         //Adds each key value with padding around it
         let padding;
-        if(element[keys[i]] == null) {
-          padding = ((widthArray[i] + 2) - 4); //The 4 is in place of the character length for null
+        if (element[keys[i]] == null) {
+          padding = widthArray[i] + 2 - 4; //The 4 is in place of the character length for null
           element[keys[i]] = "null";
         } else {
-          padding = ((widthArray[i] + 2) - element[keys[i]].toString().length);
-        };
+          padding = widthArray[i] + 2 - element[keys[i]].toString().length;
+        }
         if (padding % 2 == 1) {
           padding = (padding - 1) / 2;
           row = row + space.repeat(padding) + element[keys[i]] + space.repeat(padding + 1) + "│";
         } else {
-          row = row + space.repeat(padding/2) + element[keys[i]] + space.repeat(padding/2) + "│";
+          row = row + space.repeat(padding / 2) + element[keys[i]] + space.repeat(padding / 2) + "│";
         }
       }
       console.dir(row);
@@ -371,10 +371,10 @@ const dataTable = (data) => {
     });
     //Create the end of table
     divider = "└";
-    for (i=0; i < widthArray.length; i++) {
+    for (i = 0; i < widthArray.length; i++) {
       divider = divider + sideLine.repeat(widthArray[i] + 2);
       divider = divider + "┴";
-    };
+    }
     divider = divider.slice(0, -1) + "┘";
     console.dir(divider);
   }
