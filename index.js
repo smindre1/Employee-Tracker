@@ -102,7 +102,6 @@ const addDepartment = () => {
       });
     });
 };
-
 //This function allows you to add a role to a department///////////
 const addRole = async () => {
   let roleTitle;
@@ -129,9 +128,9 @@ const addRole = async () => {
   //
   connection.query(
     "SELECT * FROM `department`",
-    await function (err, results, fields) {
+    function (err, results, fields) {
       results.forEach((element) => {
-        array.push(element.name);
+        array.push(element.department);
       });
       inquirer
         .prompt([
@@ -158,7 +157,6 @@ const addRole = async () => {
     }
   );
 };
-
 //This function allows you to add a new employee by entering the employee’s first name, last name, role, and manager
 const addEmployee = () => {
   let firstName;
