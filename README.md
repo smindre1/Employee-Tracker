@@ -40,7 +40,7 @@ This is a command line **content managment system (CMS)** directed towards the p
 
 The following is a **Demo Video** to show the application's appearance and functionality:
 
-![Demo Video]()
+**[Demo Video](https://drive.google.com/file/d/1FZAARYug39rsKfO-UkHkI2NlGEuI3RVU/view)**
 
 ## Credits
 
