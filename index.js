@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
-// const department = require()
 const connection = require("./config/connection");
 
+//This checks if the program has properly connected to the database
 connection.connect((error) => {
   if (error) {
     console.dir("Databse connection error");
@@ -9,7 +9,7 @@ connection.connect((error) => {
   userQuestions();
 });
 
-//Inquirer Prompts
+//This function prompts the user to ask what they want to do
 const userQuestions = () => {
   inquirer
     .prompt([
@@ -71,14 +71,18 @@ const viewRoles = () => {
     userQuestions();
   });
 };
-//Grabs the data from the employee table in the database and returns a table
+//Grabs all the employee data from the database and returns a table
 const viewEmployees = () => {
-  connection.query("SELECT * FROM `employee`", function (err, results, fields) {
-    dataTable(results); // Returns results as a table in terminal
-    userQuestions();
-  });
+  connection.query(
+    "SELECT e.id, e.first_name, e.last_name, r.title, d.department, r.salary, CONCAT_WS(' ', b.first_name, b.last_name) AS manager FROM employee e JOIN role r on  e.role_id = r.id LEFT JOIN department d on r.department_id = d.id LEFT JOIN employee b on e.manager_id = b.id",
+    function (err, results, fields) {
+      dataTable(results); // Returns results as a table in terminal
+      userQuestions();
+    }
+  );
 };
 
+//This function allows you to add a department to the database
 const addDepartment = () => {
   inquirer
     .prompt([
@@ -90,7 +94,7 @@ const addDepartment = () => {
     ])
     .then((obj) => {
       const { name } = obj;
-      connection.query("INSERT INTO department (name) VALUES (?)", [name], function (err, results, fields) {
+      connection.query("INSERT INTO department (department) VALUES (?)", [name], function (err, results, fields) {
         console.dir("=====================");
         console.dir("New department added.");
         console.dir("=====================");
@@ -99,6 +103,7 @@ const addDepartment = () => {
     });
 };
 
+//This function allows you to add a role to a department///////////
 const addRole = async () => {
   let roleTitle;
   let salary;
@@ -140,7 +145,7 @@ const addRole = async () => {
         .then((obj) => {
           const { department } = obj;
           let id;
-          connection.query("SELECT id FROM `department` WHERE name = ?", [department], function (err, results, fields) {
+          connection.query("SELECT id FROM `department` WHERE department = ?", [department], function (err, results, fields) {
             id = results[0].id;
             connection.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [roleTitle, salary, id], function (err, results, fields) {
               console.dir("=====================");
@@ -154,7 +159,7 @@ const addRole = async () => {
   );
 };
 
-//enter the employee’s first name, last name, role, and manager
+//This function allows you to add a new employee by entering the employee’s first name, last name, role, and manager
 const addEmployee = () => {
   let firstName;
   let lastName;
@@ -240,7 +245,7 @@ const addEmployee = () => {
     });
 };
 
-////
+//This allows you to select an employee from the database and update their role
 const updateEmployeeRole = () => {
   let array = [];
   connection.query("SELECT first_name, last_name FROM `employee`", function (err, results, fields) {
@@ -291,20 +296,24 @@ const updateEmployeeRole = () => {
   });
 };
 
+//This function takes in an array objects that possess the same keys and transforms it into a table
 const dataTable = (data) => {
   // Measures the length of the widest item for a specific object key
   const columnWidth = (key, nestedArray) => {
     let width = key.length;
     nestedArray.forEach((element) => {
-      if (element[key] == null) {
+      //Checks if an item is null or empty and readjusts it to be read properly
+      if (element[key] == null || element[key] == "") {
         element[key] = "null";
       }
+      //Keeps track of what the widest item is
       if (width < element[key].length) {
         width = element[key].length;
       }
     });
     return width;
   };
+  //It's saying as long as their is data received, run it, otherwise, don't
   if (data[0] != null && data[0] != undefined) {
     const keys = Object.keys(data[0]);
     const numOfKeys = keys.length;
@@ -313,7 +322,7 @@ const dataTable = (data) => {
     keys.forEach((element) => {
       widthArray.push(columnWidth(element, data));
     });
-    //Create the top portion of titles of
+    //This creates the top border line of the table
     for (i = 0; i < numOfKeys; i++) {
       let borderWidth = 0;
       borderWidth = borderWidth + columnWidth(keys[i], data) + 2;
@@ -326,7 +335,7 @@ const dataTable = (data) => {
     }
     topBorderLine = topBorderLine.slice(0, -1) + "┐";
     console.dir(topBorderLine);
-    //Column titles row
+    //This creates the row of column titles
     let row = "│";
     let space = " ";
     for (i = 0; i < numOfKeys; i++) {
@@ -339,7 +348,7 @@ const dataTable = (data) => {
       }
     }
     console.dir(row);
-    //Division line
+    //This creates the division line that separates the column titles and the column data
     let divider = "├";
     for (i = 0; i < widthArray.length; i++) {
       divider = divider + sideLine.repeat(widthArray[i] + 2);
@@ -347,7 +356,7 @@ const dataTable = (data) => {
     }
     divider = divider.slice(0, -1) + "┤";
     console.dir(divider);
-    //Create the rows
+    //This creates each row of the table
     row = "│";
     data.forEach((element) => {
       for (i = 0; i < numOfKeys; i++) {
@@ -369,7 +378,7 @@ const dataTable = (data) => {
       console.dir(row);
       row = "│";
     });
-    //Create the end of table
+    //This creates the bottom borderline of the table
     divider = "└";
     for (i = 0; i < widthArray.length; i++) {
       divider = divider + sideLine.repeat(widthArray[i] + 2);
